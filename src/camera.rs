@@ -1,6 +1,7 @@
 use crate::{
     color::Color,
     ray::{Point3, Ray},
+    sphere::hit_sphere,
     vec3::{unit_vector, Vec3},
 };
 use rayon::prelude::*;
@@ -9,7 +10,6 @@ pub struct Camera {
     pub image_width: i32,
     pub image_height: i32,
     camera_center: Point3,
-    aspect_ratio: f64,
     focal_length: f64,
     viewport_width: f64,
     viewport_height: f64,
@@ -46,7 +46,6 @@ impl Camera {
         Self {
             image_width,
             image_height,
-            aspect_ratio,
             camera_center,
             focal_length,
             viewport_width,
@@ -85,7 +84,17 @@ impl Camera {
 }
 
 pub fn ray_color(ray: Ray) -> Color {
+    if hit_sphere(Point3::new(0., 0., -1.), 0.5, &ray) {
+        return Color::new(1., 0., 0.);
+    }
     let unit_direction = unit_vector(ray.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     return Color::new(1., 1., 1.) * (1. - a) + Color::new(0.5, 0.7, 1.) * a;
+}
+
+#[cfg(test)]
+mod camera {
+    //Test viewport calculations
+    //Test pixel00 calculation
+    //Test focal length calculation
 }

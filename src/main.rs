@@ -1,6 +1,7 @@
 mod camera;
 mod color;
 mod ray;
+mod sphere;
 mod vec3;
 
 use std::io::Write;
