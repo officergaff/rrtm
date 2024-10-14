@@ -10,6 +10,16 @@ impl Vec3 {
         Self { e: [e0, e1, e2] }
     }
 
+    pub fn x(&self) -> f64 {
+        self.e[0]
+    }
+    pub fn y(&self) -> f64 {
+        self.e[1]
+    }
+    pub fn z(&self) -> f64 {
+        self.e[2]
+    }
+
     pub fn length(&self) -> f64 {
         f64::sqrt(self.length_squared())
     }
