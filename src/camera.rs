@@ -84,10 +84,12 @@ impl Camera {
 }
 
 pub fn ray_color(ray: Ray) -> Color {
-    if hit_sphere(Point3::new(0., 0., -1.), 0.5, &ray) {
-        return Color::new(1., 0., 0.);
+    let t = hit_sphere(&Point3::new(0., 0., -1.), 0.5, &ray);
+    if t > 0. {
+        let N = unit_vector(&(ray.at(t) - Vec3::new(0., 0., -1.)));
+        return Color::new(N.x() + 1., N.y() + 1., N.z() + 1.) * 0.5;
     }
-    let unit_direction = unit_vector(ray.direction());
+    let unit_direction = unit_vector(&ray.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     return Color::new(1., 1., 1.) * (1. - a) + Color::new(0.5, 0.7, 1.) * a;
 }

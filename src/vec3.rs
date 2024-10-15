@@ -43,8 +43,8 @@ pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
     }
 }
 
-pub fn unit_vector(v: Vec3) -> Vec3 {
-    return v / v.length();
+pub fn unit_vector(v: &Vec3) -> Vec3 {
+    return *v / v.length();
 }
 
 impl Index<usize> for Vec3 {
