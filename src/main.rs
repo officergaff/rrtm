@@ -1,12 +1,21 @@
 mod camera;
 mod color;
+mod hittable;
 mod ray;
 mod sphere;
+mod utils;
 mod vec3;
 
 use std::io::Write;
 
-use crate::camera::Camera;
+use crate::{camera::Camera, hittable::HittableList, ray::Point3, sphere::Sphere};
+
+fn create_world() -> HittableList {
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0., 0., -1.), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0., -100.5, -1.), 100.)));
+    return world;
+}
 
 fn main() {
     let out = std::io::stdout();
@@ -18,8 +27,8 @@ fn main() {
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-
-    let pixels = camera.render();
+    let mut world = create_world();
+    let pixels = camera.render(&world);
 
     for p in pixels {
         let _ = writeln!(&out, "{}", p);

@@ -1,5 +1,6 @@
 use crate::{
     color::Color,
+    hittable::{HitRecord, Hittable, HittableList},
     ray::{Point3, Ray},
     sphere::hit_sphere,
     vec3::{unit_vector, Vec3},
@@ -59,7 +60,7 @@ impl Camera {
         }
     }
 
-    pub fn render(&self) -> Vec<String> {
+    pub fn render(&self, world: &HittableList) -> Vec<String> {
         return (0..self.image_height)
             .into_par_iter()
             .flat_map(|j| {
@@ -72,7 +73,7 @@ impl Camera {
                         let ray_direction = pixel_center - self.camera_center;
                         let ray = Ray::new(self.camera_center, ray_direction);
 
-                        let pixel_color = ray_color(ray);
+                        let pixel_color = ray_color(ray, world);
                         let rgb = pixel_color.get_rgb();
                         format!("{} {} {}", rgb[0], rgb[1], rgb[2])
                     })
@@ -83,12 +84,12 @@ impl Camera {
     }
 }
 
-pub fn ray_color(ray: Ray) -> Color {
-    let t = hit_sphere(&Point3::new(0., 0., -1.), 0.5, &ray);
-    if t > 0. {
-        let N = unit_vector(&(ray.at(t) - Vec3::new(0., 0., -1.)));
-        return Color::new(N.x() + 1., N.y() + 1., N.z() + 1.) * 0.5;
+pub fn ray_color(ray: Ray, world: &HittableList) -> Color {
+    let mut rec: HitRecord = Default::default();
+    if world.hit(&ray, 0., f64::INFINITY, &mut rec) {
+        return (rec.normal + Color::new(1., 1., 1.)) * 0.5;
     }
+
     let unit_direction = unit_vector(&ray.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     return Color::new(1., 1., 1.) * (1. - a) + Color::new(0.5, 0.7, 1.) * a;
