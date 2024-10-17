@@ -14,11 +14,11 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Option<Arc<dyn Material>>) -> Self {
+    pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
         return Self {
             center,
             radius,
-            material,
+            material: Some(material),
         };
     }
 }
@@ -50,6 +50,7 @@ impl Hittable for Sphere {
         // and the unit-length of the intersect surface normal
         rec.t = root;
         rec.p = r.at(rec.t);
+        rec.material = self.material.clone();
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
         return true;

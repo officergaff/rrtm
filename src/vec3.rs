@@ -46,6 +46,9 @@ impl Vec3 {
             return -on_unit_sphere;
         }
     }
+    pub fn reflect(v: &Self, n: &Self) -> Self {
+        return *v - *n * 2. * dot(*v, *n);
+    }
     // NEED TO REVISIT -----
 
     pub fn x(&self) -> f64 {
@@ -64,6 +67,12 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f64 {
         self.e.iter().fold(0., |acc, num| acc + num * num)
+    }
+
+    pub fn near_zero(&self) -> bool {
+        // Return true if the vector is close to 0 in all dimensions
+        let s = 1e-8;
+        return f64::abs(self.e[0]) < s && f64::abs(self.e[1]) < s && f64::abs(self.e[2]) < s;
     }
 }
 

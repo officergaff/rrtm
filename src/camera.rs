@@ -83,7 +83,7 @@ impl Camera {
                     .into_par_iter()
                     .map(|i| {
                         let pixel_color: Color = (0..self.samples_per_pixel)
-                            .into_par_iter()
+                            .into_par_iter() // Make this parallel too
                             .map(|_| {
                                 let r = self.get_ray(i, j);
                                 self.ray_color(r, world, self.max_depth)
@@ -98,7 +98,7 @@ impl Camera {
             .collect();
     }
 
-    pub fn ray_color(&self, ray: Ray, world: &HittableList, depth: i32) -> Color {
+    pub fn ray_color(&self, ray: Ray, world: &dyn Hittable, depth: i32) -> Color {
         if depth <= 0 {
             return Color::default();
         }
@@ -108,8 +108,18 @@ impl Camera {
         // up being under surface of the object, we limit the minimum intersect distance
         if world.hit(&ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
             // let direction = Vec3::random_on_hemisphere(*rec.normal); --- Uniform Reflection
-            let direction = rec.normal + Vec3::random_unit_vector(); // Lambertian Reflection
-            return self.ray_color(Ray::new(rec.p, direction), world, depth - 1) * 0.9;
+            // let direction = rec.normal + Vec3::random_unit_vector(); // Lambertian Reflection
+            let mut scattered = Ray::default();
+            let mut attenuation = Color::default();
+            if rec
+                .material
+                .as_ref()
+                .unwrap()
+                .scatter(&ray, &rec, &mut attenuation, &mut scattered)
+            {
+                return attenuation * self.ray_color(scattered, world, depth - 1);
+            }
+            return Color::default();
         }
 
         let unit_direction = unit_vector(&ray.direction());
