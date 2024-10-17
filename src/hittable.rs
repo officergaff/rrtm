@@ -1,14 +1,17 @@
-use std::{boxed::Box, rc::Rc};
+use std::{boxed::Box, sync::Arc};
 
 use crate::{
     interval::Interval,
+    material::Material,
     ray::{Point3, Ray},
     vec3::{dot, Vec3},
 };
-#[derive(Clone, Default, Copy)]
+
+#[derive(Clone, Default)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub material: Option<Arc<dyn Material>>,
     pub t: f64,
     pub front_face: bool,
 }

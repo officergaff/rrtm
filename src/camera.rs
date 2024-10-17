@@ -13,6 +13,7 @@ pub struct Camera {
     pub image_width: i32,
     pub image_height: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     pixel_samples_scale: f64,
     camera_center: Point3,
     focal_length: f64,
@@ -32,6 +33,7 @@ impl Camera {
         aspect_ratio: f64,
         focal_length: f64,
         samples_per_pixel: i32,
+        max_depth: i32,
     ) -> Self {
         let mut image_height = (image_width as f64 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height };
@@ -59,6 +61,7 @@ impl Camera {
             image_height,
             camera_center,
             samples_per_pixel,
+            max_depth,
             pixel_samples_scale,
             focal_length,
             viewport_width,
@@ -83,7 +86,7 @@ impl Camera {
                             .into_par_iter()
                             .map(|_| {
                                 let r = self.get_ray(i, j);
-                                ray_color(r, world)
+                                self.ray_color(r, world, self.max_depth)
                             })
                             .reduce(|| Color::default(), |acc, color| acc + color);
                         let rgb = (pixel_color * self.pixel_samples_scale).get_rgb();
@@ -93,6 +96,25 @@ impl Camera {
                 row
             })
             .collect();
+    }
+
+    pub fn ray_color(&self, ray: Ray, world: &HittableList, depth: i32) -> Color {
+        if depth <= 0 {
+            return Color::default();
+        }
+        let mut rec: HitRecord = Default::default();
+
+        // Fix for shadow acne, due to floating point rounding errors, the reflected ray might end
+        // up being under surface of the object, we limit the minimum intersect distance
+        if world.hit(&ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
+            // let direction = Vec3::random_on_hemisphere(*rec.normal); --- Uniform Reflection
+            let direction = rec.normal + Vec3::random_unit_vector(); // Lambertian Reflection
+            return self.ray_color(Ray::new(rec.p, direction), world, depth - 1) * 0.9;
+        }
+
+        let unit_direction = unit_vector(&ray.direction());
+        let a = 0.5 * (unit_direction.y() + 1.0);
+        return Color::new(1., 1., 1.) * (1. - a) + Color::new(0.5, 0.7, 1.) * a;
     }
 
     fn get_ray(&self, i: i32, j: i32) -> Ray {
@@ -107,18 +129,6 @@ impl Camera {
 
 fn sample_square() -> Vec3 {
     Vec3::new(random_double() - 0.5, random_double() - 0.5, 0.)
-}
-
-pub fn ray_color(ray: Ray, world: &HittableList) -> Color {
-    let mut rec: HitRecord = Default::default();
-    if world.hit(&ray, Interval::new(0., f64::INFINITY), &mut rec) {
-        let direction = Vec3::random_on_hemisphere(&rec.normal);
-        return ray_color(Ray::new(rec.p, direction), world) * 0.5;
-    }
-
-    let unit_direction = unit_vector(&ray.direction());
-    let a = 0.5 * (unit_direction.y() + 1.0);
-    return Color::new(1., 1., 1.) * (1. - a) + Color::new(0.5, 0.7, 1.) * a;
 }
 
 #[cfg(test)]
