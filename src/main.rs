@@ -21,7 +21,7 @@ fn create_world() -> HittableList {
 fn main() {
     let out = std::io::stdout();
 
-    let camera = Camera::new(400, 16. / 9., 1.);
+    let camera = Camera::new(400, 16. / 9., 1., 10);
 
     let _ = writeln!(
         &out,
