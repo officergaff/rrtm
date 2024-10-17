@@ -87,7 +87,7 @@ impl Camera {
 
 pub fn ray_color(ray: Ray, world: &HittableList) -> Color {
     let mut rec: HitRecord = Default::default();
-    if world.hit(&ray, Interval::universe(), &mut rec) {
+    if world.hit(&ray, Interval::new(0., f64::INFINITY), &mut rec) {
         return (rec.normal + Color::new(1., 1., 1.)) * 0.5;
     }
 
