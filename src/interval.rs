@@ -1,6 +1,6 @@
 pub struct Interval {
-    min: f64,
-    max: f64,
+    pub min: f64,
+    pub max: f64,
 }
 
 impl Interval {

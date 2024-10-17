@@ -1,6 +1,7 @@
 use crate::{
     color::Color,
     hittable::{HitRecord, Hittable, HittableList},
+    interval::Interval,
     ray::{Point3, Ray},
     sphere::hit_sphere,
     vec3::{unit_vector, Vec3},
@@ -86,7 +87,7 @@ impl Camera {
 
 pub fn ray_color(ray: Ray, world: &HittableList) -> Color {
     let mut rec: HitRecord = Default::default();
-    if world.hit(&ray, 0., f64::INFINITY, &mut rec) {
+    if world.hit(&ray, Interval::universe(), &mut rec) {
         return (rec.normal + Color::new(1., 1., 1.)) * 0.5;
     }
 

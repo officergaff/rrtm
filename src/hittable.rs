@@ -1,6 +1,7 @@
 use std::{boxed::Box, rc::Rc};
 
 use crate::{
+    interval::Interval,
     ray::{Point3, Ray},
     vec3::{dot, Vec3},
 };
@@ -26,7 +27,7 @@ impl HitRecord {
 }
 
 pub trait Hittable: Sync {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
 
 pub struct HittableList {
@@ -50,17 +51,17 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         // Go through every object and check if there's a hit
         let mut temp_rec: HitRecord = Default::default();
         let mut hit_anything = false;
         // We keep track of the object hit that is the closest so far
         // This will be used to decrement the ray_tmax
         // This way, the only rec that we keep will end up being the one closest to the camera
-        let mut closest_so_far = ray_tmax;
+        let mut closest_so_far = ray_t.max;
 
         for obj in &self.objects {
-            if obj.hit(r, ray_tmin, closest_so_far, &mut temp_rec) {
+            if obj.hit(r, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec

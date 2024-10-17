@@ -1,5 +1,6 @@
 use crate::{
     hittable::{HitRecord, Hittable},
+    interval::Interval,
     ray::{Point3, Ray},
     vec3::{dot, Vec3},
 };
@@ -16,7 +17,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let oc = self.center - r.origin(); // C - Q
         let a = r.direction().length_squared(); // d * d
         let h = dot(r.direction(), oc); // simplified b, b = -2h
@@ -30,9 +31,13 @@ impl Hittable for Sphere {
         // We are checking if the resulting 't' falls inside the accepted interval
         let sqrtd = f64::sqrt(discriminant);
 
-        let root = (h - sqrtd) / a;
-        if root <= ray_tmin || root >= ray_tmax {
-            return false;
+        // Check if root falls in acceptable range. Check for both signs of the root
+        let mut root = (h - sqrtd) / a;
+        if !ray_t.surrounds(root) {
+            root = (h + sqrtd) / a;
+            if !ray_t.surrounds(root) {
+                return false;
+            }
         }
         // We update the hitrecord with the 't', point of intersect
         // and the unit-length of the intersect surface normal
