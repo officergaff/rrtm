@@ -14,8 +14,12 @@ use crate::{camera::Camera, hittable::HittableList, ray::Point3, sphere::Sphere}
 
 fn create_world() -> HittableList {
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(Point3::new(0., 0., -1.), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0., -100.5, -1.), 100.)));
+    world.add(Box::new(Sphere::new(Point3::new(0., 0., -1.), 0.5, None)));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0., -100.5, -1.),
+        100.,
+        None,
+    )));
     return world;
 }
 
