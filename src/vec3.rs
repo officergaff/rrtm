@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub};
 
+use crate::utils::{random_double, random_double_range};
+
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Vec3 {
     e: [f64; 3],
@@ -9,6 +11,42 @@ impl Vec3 {
     pub fn new(e0: f64, e1: f64, e2: f64) -> Self {
         Self { e: [e0, e1, e2] }
     }
+
+    // NEED TO REVISIT -----
+    pub fn random() -> Self {
+        Self {
+            e: [random_double(), random_double(), random_double()],
+        }
+    }
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self {
+            e: [
+                random_double_range(min, max),
+                random_double_range(min, max),
+                random_double_range(min, max),
+            ],
+        }
+    }
+    pub fn random_unit_vector() -> Self {
+        loop {
+            let p = Self::random_range(-1., 1.);
+            let lensq = p.length_squared();
+            if lensq > 1e-160 && lensq <= 1. {
+                // First conditional to avoid floating point
+                // abstraction leak
+                return p / f64::sqrt(lensq);
+            }
+        }
+    }
+    pub fn random_on_hemisphere(normal: &Self) -> Vec3 {
+        let on_unit_sphere = Self::random_unit_vector();
+        if dot(on_unit_sphere, *normal) > 0. {
+            return on_unit_sphere;
+        } else {
+            return -on_unit_sphere;
+        }
+    }
+    // NEED TO REVISIT -----
 
     pub fn x(&self) -> f64 {
         self.e[0]

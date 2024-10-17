@@ -112,7 +112,8 @@ fn sample_square() -> Vec3 {
 pub fn ray_color(ray: Ray, world: &HittableList) -> Color {
     let mut rec: HitRecord = Default::default();
     if world.hit(&ray, Interval::new(0., f64::INFINITY), &mut rec) {
-        return (rec.normal + Color::new(1., 1., 1.)) * 0.5;
+        let direction = Vec3::random_on_hemisphere(&rec.normal);
+        return ray_color(Ray::new(rec.p, direction), world) * 0.5;
     }
 
     let unit_direction = unit_vector(&ray.direction());
