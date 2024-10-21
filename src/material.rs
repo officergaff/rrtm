@@ -2,6 +2,7 @@ use crate::{
     color::Color,
     hittable::HitRecord,
     ray::Ray,
+    utils::random_double,
     vec3::{dot, unit_vector, Vec3},
 };
 
@@ -70,5 +71,57 @@ impl Material for Metal {
         *scattered = Ray::new(rec.p, reflected);
         *attenuation = self.albedo;
         return dot(scattered.direction(), rec.normal) > 0.;
+    }
+}
+
+pub struct Dielectric {
+    refraction_index: f64,
+}
+
+impl Dielectric {
+    pub fn new(ri: f64) -> Self {
+        Dielectric {
+            refraction_index: ri,
+        }
+    }
+
+    pub fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+        // Schlick's approximation for reflectance
+        // https://en.wikipedia.org/wiki/Schlick's_approximation
+        let mut r0: f64 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        r0 = r0 * r0;
+        return r0 + (1.0 - r0) * f64::powf(1. - cosine, 5.);
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Color,
+        scattered: &mut Ray,
+    ) -> bool {
+        *attenuation = Color::new(1.0, 1.0, 1.0);
+        let ri = if rec.front_face {
+            1.0 / self.refraction_index
+        } else {
+            self.refraction_index
+        };
+
+        let unit_direction = unit_vector(&r_in.direction());
+        let cos_theta = f64::min(dot(-unit_direction, rec.normal), 1.0);
+        let sin_theta = f64::sqrt(1.0 - cos_theta * cos_theta);
+        let cannot_refract = ri * sin_theta > 1.0;
+        let direction: Vec3;
+        if cannot_refract || Dielectric::reflectance(cos_theta, ri) > random_double() {
+            // Must reflect
+            direction = Vec3::reflect(&unit_direction, &rec.normal)
+        } else {
+            // Must refract
+            direction = Vec3::refract(&unit_direction, &rec.normal, ri);
+        }
+        *scattered = Ray::new(rec.p, direction);
+        true
     }
 }

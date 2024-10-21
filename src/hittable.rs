@@ -20,8 +20,8 @@ impl HitRecord {
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
         // Sets the hit record normal vector
         // NOTE: the parameter outward_normal is assumed to have unit length
-        let is_front_face = dot(r.direction(), *outward_normal) < 0.;
-        self.normal = if is_front_face {
+        self.front_face = dot(r.direction(), *outward_normal) < 0.;
+        self.normal = if self.front_face {
             *outward_normal
         } else {
             -*outward_normal
