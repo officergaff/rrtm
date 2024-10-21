@@ -8,12 +8,50 @@ mod sphere;
 mod utils;
 mod vec3;
 
-use std::{io::Write, sync::Arc};
+use std::{f64::consts, io::Write, sync::Arc};
 
 use crate::{
     camera::Camera, color::Color, hittable::HittableList, material::*, ray::Point3, sphere::Sphere,
+    vec3::Vec3,
 };
 
+fn main() {
+    let out = std::io::stdout();
+
+    let lookfrom = Point3::new(-2., 2., 1.);
+    let lookat = Point3::new(0., 0., -1.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(400, 16. / 9., 50, 50, 20., lookfrom, lookat, vup);
+
+    let _ = writeln!(
+        &out,
+        "P3\n{} {}\n255\n",
+        camera.image_width, camera.image_height
+    );
+    let world = air_bubble();
+    let pixels = camera.render(&world);
+
+    for p in pixels {
+        let _ = writeln!(&out, "{}", p);
+    }
+}
+
+fn wide_angle_test() -> HittableList {
+    let mut world = HittableList::new();
+
+    let R = f64::cos(consts::PI / 4.);
+
+    let material_left = Arc::new(Lambertian::new(Color::new(0., 0., 1.)));
+    let material_right = Arc::new(Lambertian::new(Color::new(1., 0., 0.)));
+
+    let left = Box::new(Sphere::new(Point3::new(-R, 0., -1.), R, material_left));
+    let right = Box::new(Sphere::new(Point3::new(R, 0., -1.), R, material_right));
+
+    world.add(left);
+    world.add(right);
+
+    world
+}
 fn basic_world() -> HittableList {
     let mut world = HittableList::new();
     world.add(Box::new(Sphere::new(
@@ -137,24 +175,6 @@ fn metal_lambertian_world() -> HittableList {
     world.add(left);
     world.add(right);
     return world;
-}
-
-fn main() {
-    let out = std::io::stdout();
-
-    let camera = Camera::new(400, 16. / 9., 1., 50, 50, 90.);
-
-    let _ = writeln!(
-        &out,
-        "P3\n{} {}\n255\n",
-        camera.image_width, camera.image_height
-    );
-    let world = air_bubble();
-    let pixels = camera.render(&world);
-
-    for p in pixels {
-        let _ = writeln!(&out, "{}", p);
-    }
 }
 
 #[cfg(test)]

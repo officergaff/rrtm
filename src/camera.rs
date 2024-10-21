@@ -5,18 +5,25 @@ use crate::{
     ray::{Point3, Ray},
     sphere::hit_sphere,
     utils::{degrees_to_radians, random_double},
-    vec3::{unit_vector, Vec3},
+    vec3::{cross, unit_vector, Vec3},
 };
 use rayon::prelude::*;
 
 pub struct Camera {
     pub image_width: i32,
     pub image_height: i32,
-    pub samples_per_pixel: i32,
-    pub max_depth: i32,
-    pub vfov: f64, // vertical view angle -> field of view
+    pub samples_per_pixel: i32, // random sampling per pixel for antialiasing
     pixel_samples_scale: f64,
-    camera_center: Point3,
+    pub max_depth: i32, // ray bounce depth
+    pub vfov: f64,      // vertical view angle -> field of view
+    lookfrom: Point3,   // point where camera is looking from
+    lookat: Point3,     // point where camera is looking at
+    vup: Vec3,          // rotation angle of camera
+
+    u: Vec3, // camera frame basis vectors
+    v: Vec3,
+    w: Vec3,
+
     focal_length: f64,
     viewport_width: f64,
     viewport_height: f64,
@@ -32,25 +39,35 @@ impl Camera {
     pub fn new(
         image_width: i32,
         aspect_ratio: f64,
-        focal_length: f64,
         samples_per_pixel: i32,
         max_depth: i32,
         vfov: f64,
+        lookfrom: Point3,
+        lookat: Point3,
+        vup: Vec3,
     ) -> Self {
         let mut image_height = (image_width as f64 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height };
 
         let pixel_samples_scale = 1. / samples_per_pixel as f64;
         // Camera
+        let camera_center = lookfrom;
+        let focal_length = (lookfrom - lookat).length();
+        let w = unit_vector(&(lookfrom - lookat)); // z-axis, the directional vector that
+                                                   // looks at the object
+        let u = unit_vector(&cross(vup, w)); // the x axis of the camera looking
+                                             // at object
+        let v = cross(w, u); // y-axis
+
+        // Viewport dimensions
         let theta = degrees_to_radians(vfov);
         let h = f64::tan(theta / 2.);
         let viewport_height = 2. * h * focal_length;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
-        let camera_center = Point3::new(0., 0., 0.);
 
         // Calculate the vectors across the horizontal and down the vertical viewport edges
-        let viewport_u = Vec3::new(viewport_width, 0., 0.);
-        let viewport_v = Vec3::new(0., -viewport_height, 0.);
+        let viewport_u = u * viewport_width;
+        let viewport_v = -v * viewport_height;
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel
         let pixel_delta_u = viewport_u / image_width as f64;
@@ -58,12 +75,17 @@ impl Camera {
 
         // Calculate location of the upper left pixel
         let viewport_upper_left =
-            camera_center - Vec3::new(0., 0., focal_length) - viewport_u / 2. - viewport_v / 2.;
+            camera_center - (w * focal_length) - (viewport_u / 2.) - (viewport_v / 2.);
         let pixel00_loc = viewport_upper_left + (pixel_delta_u * pixel_delta_v) * 0.5;
         Self {
             image_width,
             image_height,
-            camera_center,
+            lookfrom,
+            lookat,
+            vup,
+            u,
+            v,
+            w,
             samples_per_pixel,
             max_depth,
             vfov,
@@ -137,8 +159,8 @@ impl Camera {
         let pixel_sample = self.pixel00_loc
             + (self.pixel_delta_u * (offset.x() + i as f64))
             + (self.pixel_delta_v * (offset.y() + j as f64));
-        let ray_direction = pixel_sample - self.camera_center;
-        return Ray::new(self.camera_center, ray_direction);
+        let ray_direction = pixel_sample - self.lookfrom;
+        return Ray::new(self.lookfrom, ray_direction);
     }
 }
 
