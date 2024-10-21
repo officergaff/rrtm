@@ -4,7 +4,7 @@ use crate::{
     interval::Interval,
     ray::{Point3, Ray},
     sphere::hit_sphere,
-    utils::random_double,
+    utils::{degrees_to_radians, random_double},
     vec3::{unit_vector, Vec3},
 };
 use rayon::prelude::*;
@@ -14,6 +14,7 @@ pub struct Camera {
     pub image_height: i32,
     pub samples_per_pixel: i32,
     pub max_depth: i32,
+    pub vfov: f64, // vertical view angle -> field of view
     pixel_samples_scale: f64,
     camera_center: Point3,
     focal_length: f64,
@@ -34,13 +35,16 @@ impl Camera {
         focal_length: f64,
         samples_per_pixel: i32,
         max_depth: i32,
+        vfov: f64,
     ) -> Self {
         let mut image_height = (image_width as f64 / aspect_ratio) as i32;
         image_height = if image_height < 1 { 1 } else { image_height };
 
         let pixel_samples_scale = 1. / samples_per_pixel as f64;
         // Camera
-        let viewport_height = 2.;
+        let theta = degrees_to_radians(vfov);
+        let h = f64::tan(theta / 2.);
+        let viewport_height = 2. * h * focal_length;
         let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
         let camera_center = Point3::new(0., 0., 0.);
 
@@ -62,6 +66,7 @@ impl Camera {
             camera_center,
             samples_per_pixel,
             max_depth,
+            vfov,
             pixel_samples_scale,
             focal_length,
             viewport_width,

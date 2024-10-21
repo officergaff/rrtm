@@ -142,7 +142,7 @@ fn metal_lambertian_world() -> HittableList {
 fn main() {
     let out = std::io::stdout();
 
-    let camera = Camera::new(400, 16. / 9., 1., 50, 50);
+    let camera = Camera::new(400, 16. / 9., 1., 50, 50, 90.);
 
     let _ = writeln!(
         &out,
