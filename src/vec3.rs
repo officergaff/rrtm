@@ -38,6 +38,18 @@ impl Vec3 {
             }
         }
     }
+    pub fn random_in_unit_disk() -> Self {
+        loop {
+            let p = Self::new(
+                random_double_range(-1., 1.),
+                random_double_range(-1., 1.),
+                0.,
+            );
+            if p.length_squared() < 1. {
+                return p;
+            }
+        }
+    }
     pub fn random_on_hemisphere(normal: &Self) -> Vec3 {
         let on_unit_sphere = Self::random_unit_vector();
         if dot(on_unit_sphere, *normal) > 0. {
