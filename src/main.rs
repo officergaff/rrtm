@@ -78,13 +78,13 @@ fn render_much_sphere() -> HittableList {
     }
 
     let mat1 = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat1)));
+    world.add(Box::new(Sphere::new(Point3::new(4., 1., 0.), 1., mat1)));
 
     let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
 
     let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat3)));
+    world.add(Box::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
     return world;
 }
 
