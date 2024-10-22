@@ -77,7 +77,7 @@ fn render_much_sphere() -> HittableList {
         }
     }
 
-    let mat1 = Arc::new(Dielectric::new(0.5));
+    let mat1 = Arc::new(Dielectric::new(1.5));
     world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat1)));
 
     let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
