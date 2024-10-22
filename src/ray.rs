@@ -6,11 +6,19 @@ pub type Point3 = Vec3;
 pub struct Ray {
     orig: Point3,
     dir: Vec3,
+    tm: f64,
 }
 
 impl Ray {
     pub fn new(orig: Point3, dir: Vec3) -> Self {
-        Self { orig, dir }
+        Self { orig, dir, tm: 0. }
+    }
+    pub fn new_tm(orig: Point3, dir: Vec3, tm: f64) -> Self {
+        Self { orig, dir, tm }
+    }
+
+    pub fn time(&self) -> f64 {
+        self.tm
     }
     pub fn origin(&self) -> Point3 {
         self.orig

@@ -27,7 +27,7 @@ fn main() {
     let lookfrom = Point3::new(13., 2., 3.);
     let lookat = Point3::new(0., 0., 0.);
     let vup = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(800, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
 
     let _ = writeln!(
         &out,
@@ -72,19 +72,20 @@ fn render_much_sphere() -> HittableList {
                 } else {
                     mat = Arc::new(Dielectric::new(1.5));
                 }
-                world.add(Box::new(Sphere::new(center, 0.2, mat)));
+                let center2 = center + Vec3::new(0., random_double_range(0., 0.5), 0.);
+                world.add(Box::new(Sphere::new_moving(center, center2, 0.2, mat)));
             }
         }
     }
 
     let mat1 = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat1)));
+    world.add(Box::new(Sphere::new(Point3::new(4., 1., 0.), 1., mat1)));
 
     let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
 
     let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat3)));
+    world.add(Box::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
     return world;
 }
 

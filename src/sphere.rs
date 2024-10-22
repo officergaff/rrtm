@@ -8,7 +8,7 @@ use crate::{
 use std::sync::Arc;
 
 pub struct Sphere {
-    center: Point3,
+    center: Ray,
     radius: f64,
     material: Option<Arc<dyn Material>>,
 }
@@ -16,7 +16,19 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
         return Self {
-            center,
+            center: Ray::new(center, Vec3::default()),
+            radius: f64::max(0., radius),
+            material: Some(material),
+        };
+    }
+    pub fn new_moving(
+        center1: Point3,
+        center2: Point3,
+        radius: f64,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        return Self {
+            center: Ray::new(center1, center2 - center1),
             radius,
             material: Some(material),
         };
@@ -25,7 +37,8 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        let oc = self.center - r.origin(); // C - Q
+        let current_center = self.center.at(r.time());
+        let oc = current_center - r.origin(); // C - Q
         let a = r.direction().length_squared(); // d * d
         let h = dot(r.direction(), oc); // simplified b, b = -2h
         let c = oc.length_squared() - self.radius * self.radius; // (C-Q)*(C-Q) - radius^2
@@ -51,7 +64,7 @@ impl Hittable for Sphere {
         rec.t = root;
         rec.p = r.at(rec.t);
         rec.material = self.material.clone();
-        let outward_normal = (rec.p - self.center) / self.radius;
+        let outward_normal = (rec.p - current_center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
         return true;
     }
