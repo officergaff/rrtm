@@ -11,40 +11,81 @@ mod vec3;
 use std::{f64::consts, io::Write, sync::Arc};
 
 use crate::{
-    camera::Camera, color::Color, hittable::HittableList, material::*, ray::Point3, sphere::Sphere,
+    camera::Camera,
+    color::Color,
+    hittable::HittableList,
+    material::*,
+    ray::Point3,
+    sphere::Sphere,
+    utils::{random_double, random_double_range},
     vec3::Vec3,
 };
 
 fn main() {
     let out = std::io::stdout();
 
-    let lookfrom = Point3::new(-2., 2., 1.);
-    let lookat = Point3::new(0., 0., -1.);
+    let lookfrom = Point3::new(13., 2., 3.);
+    let lookat = Point3::new(0., 0., 0.);
     let vup = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(
-        400,
-        16. / 9.,
-        50,
-        50,
-        20.,
-        lookfrom,
-        lookat,
-        vup,
-        10.,
-        3.4641016151377544,
-    );
+    let camera = Camera::new(800, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
 
     let _ = writeln!(
         &out,
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    let world = air_bubble();
+    let world = render_much_sphere();
     let pixels = camera.render(&world);
 
     for p in pixels {
         let _ = writeln!(&out, "{}", p);
     }
+}
+
+fn render_much_sphere() -> HittableList {
+    let mut world = HittableList::new();
+
+    let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0., -1000., 0.),
+        1000.,
+        ground_mat,
+    )));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_double();
+            let center = Point3::new(
+                a as f64 + 0.9 * random_double(),
+                0.2,
+                b as f64 + 0.9 * random_double(),
+            );
+            if (center - Point3::new(4., 0.2, 0.)).length() > 0.9 {
+                let mat: Arc<dyn Material>;
+                if choose_mat < 0.8 {
+                    let albedo = Color::random() * Color::random();
+                    mat = Arc::new(Lambertian::new(albedo));
+                } else if choose_mat < 0.95 {
+                    let albedo = Color::random_range(0.5, 1.);
+                    let fuzz = random_double_range(0., 0.5);
+                    mat = Arc::new(Metal::new(albedo, fuzz));
+                } else {
+                    mat = Arc::new(Dielectric::new(1.5));
+                }
+                world.add(Box::new(Sphere::new(center, 0.2, mat)));
+            }
+        }
+    }
+
+    let mat1 = Arc::new(Dielectric::new(0.5));
+    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat1)));
+
+    let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
+
+    let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat3)));
+    return world;
 }
 
 fn wide_angle_test() -> HittableList {
