@@ -3,7 +3,7 @@ use crate::{
     ray::{Point3, Ray},
 };
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct AABB {
     x: Interval,
     y: Interval,
@@ -32,6 +32,13 @@ impl AABB {
             Interval::new(b[2], a[2])
         };
         Self { x, y, z }
+    }
+    pub fn with_boxes(box1: &AABB, box2: &AABB) -> Self {
+        Self {
+            x: Interval::with_intervals(&box1.x, &box2.x),
+            y: Interval::with_intervals(&box1.y, &box2.y),
+            z: Interval::with_intervals(&box1.z, &box2.z),
+        }
     }
 
     pub fn axis_interval(&self, n: i32) -> &Interval {

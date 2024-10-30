@@ -1,6 +1,7 @@
 use std::{boxed::Box, sync::Arc};
 
 use crate::{
+    aabb::AABB,
     interval::Interval,
     material::Material,
     ray::{Point3, Ray},
@@ -31,23 +32,26 @@ impl HitRecord {
 
 pub trait Hittable: Sync {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+    fn bounding_box(&self) -> AABB;
 }
 
 pub struct HittableList {
     pub objects: Vec<Box<dyn Hittable>>,
+    bbox: AABB,
 }
 
 impl HittableList {
     pub fn new() -> Self {
         Self {
             objects: Vec::new(),
+            bbox: AABB::default(),
         }
     }
 
     pub fn add(&mut self, object: Box<dyn Hittable>) {
-        self.objects.push(object)
+        self.bbox = AABB::with_boxes(&self.bbox, &object.bounding_box());
+        self.objects.push(object);
     }
-
     pub fn clear(&mut self) {
         self.objects.clear()
     }
@@ -71,5 +75,9 @@ impl Hittable for HittableList {
             }
         }
         return hit_anything;
+    }
+
+    fn bounding_box(&self) -> AABB {
+        self.bbox
     }
 }
