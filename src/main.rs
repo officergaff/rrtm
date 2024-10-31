@@ -1,4 +1,5 @@
 mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod hittable;
@@ -47,7 +48,7 @@ fn render_much_sphere() -> HittableList {
     let mut world = HittableList::new();
 
     let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,
         ground_mat,
@@ -74,19 +75,19 @@ fn render_much_sphere() -> HittableList {
                     mat = Arc::new(Dielectric::new(1.5));
                 }
                 let center2 = center + Vec3::new(0., random_double_range(0., 0.5), 0.);
-                world.add(Box::new(Sphere::new_moving(center, center2, 0.2, mat)));
+                world.add(Arc::new(Sphere::new_moving(center, center2, 0.2, mat)));
             }
         }
     }
 
     let mat1 = Arc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(Point3::new(4., 1., 0.), 1., mat1)));
+    world.add(Arc::new(Sphere::new(Point3::new(4., 1., 0.), 1., mat1)));
 
     let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    world.add(Box::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
+    world.add(Arc::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
 
     let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
+    world.add(Arc::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
     return world;
 }
 
@@ -98,8 +99,8 @@ fn wide_angle_test() -> HittableList {
     let material_left = Arc::new(Lambertian::new(Color::new(0., 0., 1.)));
     let material_right = Arc::new(Lambertian::new(Color::new(1., 0., 0.)));
 
-    let left = Box::new(Sphere::new(Point3::new(-R, 0., -1.), R, material_left));
-    let right = Box::new(Sphere::new(Point3::new(R, 0., -1.), R, material_right));
+    let left = Arc::new(Sphere::new(Point3::new(-R, 0., -1.), R, material_left));
+    let right = Arc::new(Sphere::new(Point3::new(R, 0., -1.), R, material_right));
 
     world.add(left);
     world.add(right);
@@ -108,12 +109,12 @@ fn wide_angle_test() -> HittableList {
 }
 fn basic_world() -> HittableList {
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0., 0., -1.),
         0.5,
         Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.))),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Point3::new(0., -100.5, -1.),
         100.,
         Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.))),
@@ -129,27 +130,27 @@ fn air_bubble() -> HittableList {
     let material_bubble = Arc::new(Dielectric::new(1.00 / 1.5));
     let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.));
 
-    let ground = Box::new(Sphere::new(
+    let ground = Arc::new(Sphere::new(
         Point3::new(0., -100.5, -1.),
         100.,
         material_ground.clone(),
     ));
-    let center = Box::new(Sphere::new(
+    let center = Arc::new(Sphere::new(
         Point3::new(0., 0., -1.2),
         0.5,
         material_center.clone(),
     ));
-    let left = Box::new(Sphere::new(
+    let left = Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
         material_left.clone(),
     ));
-    let bubble = Box::new(Sphere::new(
+    let bubble = Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.4,
         material_bubble.clone(),
     ));
-    let right = Box::new(Sphere::new(
+    let right = Arc::new(Sphere::new(
         Point3::new(1., 0., -1.),
         0.5,
         material_right.clone(),
@@ -169,22 +170,22 @@ fn dielectric_metal_lambertian_world() -> HittableList {
     let material_left = Arc::new(Dielectric::new(1.5));
     let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.));
 
-    let ground = Box::new(Sphere::new(
+    let ground = Arc::new(Sphere::new(
         Point3::new(0., -100.5, -1.),
         100.,
         material_ground.clone(),
     ));
-    let center = Box::new(Sphere::new(
+    let center = Arc::new(Sphere::new(
         Point3::new(0., 0., -1.2),
         0.5,
         material_center.clone(),
     ));
-    let left = Box::new(Sphere::new(
+    let left = Arc::new(Sphere::new(
         Point3::new(-1., 0., -1.),
         0.5,
         material_left.clone(),
     ));
-    let right = Box::new(Sphere::new(
+    let right = Arc::new(Sphere::new(
         Point3::new(1., 0., -1.),
         0.5,
         material_right.clone(),
@@ -204,22 +205,22 @@ fn metal_lambertian_world() -> HittableList {
     let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
     let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.));
 
-    let ground = Box::new(Sphere::new(
+    let ground = Arc::new(Sphere::new(
         Point3::new(0., -100.5, -1.),
         100.,
         material_ground.clone(),
     ));
-    let center = Box::new(Sphere::new(
+    let center = Arc::new(Sphere::new(
         Point3::new(0., 0., -1.2),
         0.5,
         material_center.clone(),
     ));
-    let left = Box::new(Sphere::new(
+    let left = Arc::new(Sphere::new(
         Point3::new(-1., 0., -1.),
         0.5,
         material_left.clone(),
     ));
-    let right = Box::new(Sphere::new(
+    let right = Arc::new(Sphere::new(
         Point3::new(1., 0., -1.),
         0.5,
         material_right.clone(),
