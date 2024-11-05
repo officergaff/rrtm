@@ -1,4 +1,4 @@
-use std::{boxed::Box, cmp::Ordering, sync::Arc};
+use std::{boxed::Box, cmp::Ordering, fmt::Debug, sync::Arc};
 
 use crate::{
     aabb::AABB,
@@ -8,7 +8,7 @@ use crate::{
     vec3::{dot, Vec3},
 };
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
@@ -30,11 +30,12 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Send + Sync {
+pub trait Hittable: Send + Sync + std::fmt::Debug {
     fn hit(&self, r: &Ray, ray_t: &mut Interval, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> AABB;
 }
 
+#[derive(Debug)]
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
     bbox: AABB,

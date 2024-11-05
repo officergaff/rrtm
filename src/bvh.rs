@@ -8,6 +8,7 @@ use crate::{
     utils::random_int,
 };
 
+#[derive(Debug)]
 pub struct BVHNode {
     left: Arc<dyn Hittable>,
     right: Arc<dyn Hittable>,

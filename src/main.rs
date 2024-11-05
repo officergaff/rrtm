@@ -39,7 +39,8 @@ fn main() {
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
+    let world = BVHNode::new(&mut air_bubble()) as Arc<dyn Hittable>;
+    // dbg!(world);
     let pixels = camera.render(&world);
 
     for p in pixels {

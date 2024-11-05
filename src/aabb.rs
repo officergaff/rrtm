@@ -3,7 +3,7 @@ use crate::{
     ray::{Point3, Ray},
 };
 
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct AABB {
     x: Interval,
     y: Interval,

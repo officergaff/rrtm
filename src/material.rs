@@ -6,7 +6,7 @@ use crate::{
     vec3::{dot, unit_vector, Vec3},
 };
 
-pub trait Material: Send + Sync {
+pub trait Material: Send + Sync + std::fmt::Debug {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -16,6 +16,7 @@ pub trait Material: Send + Sync {
     ) -> bool;
 }
 
+#[derive(Debug)]
 pub struct Lambertian {
     pub albedo: Color,
 }
@@ -47,6 +48,7 @@ impl Material for Lambertian {
     }
 }
 
+#[derive(Debug)]
 pub struct Metal {
     pub albedo: Color,
     pub fuzz: f64,
@@ -74,6 +76,7 @@ impl Material for Metal {
     }
 }
 
+#[derive(Debug)]
 pub struct Dielectric {
     refraction_index: f64,
 }
