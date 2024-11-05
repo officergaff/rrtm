@@ -8,6 +8,7 @@ use crate::{
     vec3::{cross, unit_vector, Vec3},
 };
 use rayon::prelude::*;
+use std::sync::Arc;
 
 pub struct Camera {
     pub image_width: i32,
@@ -114,7 +115,7 @@ impl Camera {
         }
     }
 
-    pub fn render(&self, world: &HittableList) -> Vec<String> {
+    pub fn render(&self, world: &Arc<dyn Hittable>) -> Vec<String> {
         return (0..self.image_height)
             .into_par_iter()
             .flat_map(|j| {
@@ -137,7 +138,7 @@ impl Camera {
             .collect();
     }
 
-    pub fn ray_color(&self, ray: Ray, world: &dyn Hittable, depth: i32) -> Color {
+    pub fn ray_color(&self, ray: Ray, world: &Arc<dyn Hittable>, depth: i32) -> Color {
         if depth <= 0 {
             return Color::default();
         }

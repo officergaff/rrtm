@@ -1,4 +1,4 @@
-use std::{boxed::Box, sync::Arc};
+use std::{boxed::Box, cmp::Ordering, sync::Arc};
 
 use crate::{
     aabb::AABB,
@@ -83,5 +83,30 @@ impl Hittable for HittableList {
 
     fn bounding_box(&self) -> AABB {
         self.bbox
+    }
+}
+
+pub struct HittableAxisCompare(Arc<dyn Hittable>);
+
+impl HittableAxisCompare {
+    fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis_index: i32) -> Ordering {
+        let a_bb = a.bounding_box();
+        let b_bb = b.bounding_box();
+        let a_axis_interval = a_bb.axis_interval(axis_index);
+        let b_axis_interval = b_bb.axis_interval(axis_index);
+        a_axis_interval
+            .min
+            .partial_cmp(&b_axis_interval.min)
+            .unwrap()
+    }
+
+    pub fn box_compare_x(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+        Self::box_compare(a, b, 0)
+    }
+    pub fn box_compare_y(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+        Self::box_compare(a, b, 1)
+    }
+    pub fn box_compare_z(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+        Self::box_compare(a, b, 2)
     }
 }
