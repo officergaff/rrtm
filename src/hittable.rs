@@ -31,6 +31,13 @@ impl HitRecord {
 }
 
 pub trait Hittable: Send + Sync + std::fmt::Debug {
+    // Check if Hittable object has been hit. Hit will be implemented differently depending on the
+    // struct, but it mostly mutate the HitRecord to store information.
+    //
+    // We are also setting a ray_t Interval to give the ray an acceptable range of distance where
+    // it can intersect with an object. It is useful because we only need to care for closest
+    // object it hits. Any other hits don't "count", we can safely cull other following objects
+    // that are further than the closest object hit.
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> AABB;
 }
