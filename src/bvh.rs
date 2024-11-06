@@ -22,17 +22,21 @@ impl BVHNode {
     }
 
     pub fn construct(objects: &mut Vec<Arc<dyn Hittable>>, start: usize, end: usize) -> Arc<Self> {
-        // Placeholder
-        let left: Arc<dyn Hittable>;
-        let right: Arc<dyn Hittable>;
-        let axis = random_int(0, 2);
+        let mut bbox = AABB::default();
+        for object_index in start..end {
+            bbox = AABB::with_boxes(&bbox, &objects[object_index].bounding_box());
+        }
+        let axis = bbox.longest_axis();
         let comparator = match axis {
             0 => HittableAxisCompare::box_compare_x,
             1 => HittableAxisCompare::box_compare_y,
             _ => HittableAxisCompare::box_compare_z,
         };
+
         let object_span = end - start;
         objects[start..end].sort_by(|a, b| comparator(a, b));
+        let left: Arc<dyn Hittable>;
+        let right: Arc<dyn Hittable>;
         match object_span {
             1 => {
                 left = objects[start].clone();

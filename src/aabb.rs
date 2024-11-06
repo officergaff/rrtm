@@ -49,6 +49,33 @@ impl AABB {
         }
     }
 
+    pub fn empty() -> Self {
+        Self::new(Interval::empty(), Interval::empty(), Interval::empty())
+    }
+    pub fn universe() -> Self {
+        Self::new(
+            Interval::universe(),
+            Interval::universe(),
+            Interval::universe(),
+        )
+    }
+
+    pub fn longest_axis(&self) -> i32 {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() {
+                return 0;
+            } else {
+                return 2;
+            }
+        } else {
+            if self.y.size() > self.z.size() {
+                return 1;
+            } else {
+                return 2;
+            }
+        }
+    }
+
     pub fn hit(&self, r: &Ray, ray_t: Interval) -> bool {
         let ray_orig = r.origin();
         let ray_dir = r.direction();
