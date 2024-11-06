@@ -49,9 +49,10 @@ impl AABB {
         }
     }
 
-    pub fn hit(&self, r: &Ray, ray_t: &mut Interval) -> bool {
+    pub fn hit(&self, r: &Ray, ray_t: Interval) -> bool {
         let ray_orig = r.origin();
         let ray_dir = r.direction();
+        let mut ray_t = ray_t;
         for axis in 0..3 {
             let ax = self.axis_interval(axis);
             let adinv = 1. / ray_dir[axis as usize];

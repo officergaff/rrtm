@@ -31,7 +31,7 @@ impl HitRecord {
 }
 
 pub trait Hittable: Send + Sync + std::fmt::Debug {
-    fn hit(&self, r: &Ray, ray_t: &mut Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> AABB;
 }
 
@@ -50,8 +50,8 @@ impl HittableList {
     }
 
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
+        self.objects.push(object.clone());
         self.bbox = AABB::with_boxes(&self.bbox, &object.bounding_box());
-        self.objects.push(object);
     }
     pub fn clear(&mut self) {
         self.objects.clear()
@@ -59,7 +59,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, ray_t: &mut Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         // Go through every object and check if there's a hit
         let mut temp_rec: HitRecord = Default::default();
         let mut hit_anything = false;
@@ -69,11 +69,7 @@ impl Hittable for HittableList {
         let mut closest_so_far = ray_t.max;
 
         for obj in &self.objects {
-            if obj.hit(
-                r,
-                &mut Interval::new(ray_t.min, closest_so_far),
-                &mut temp_rec,
-            ) {
+            if obj.hit(r, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec.clone()

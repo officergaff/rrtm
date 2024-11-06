@@ -10,7 +10,7 @@ mod sphere;
 mod utils;
 mod vec3;
 
-use std::{f64::consts, io::Write, sync::Arc};
+use std::{f64::consts, fs::File, io::Write, sync::Arc};
 
 use bvh::BVHNode;
 use hittable::Hittable;
@@ -26,6 +26,20 @@ use crate::{
     vec3::Vec3,
 };
 
+#[allow(unused_macros)]
+macro_rules! dbg {
+    ($val:expr) => {{
+        println!(
+            "[{}:{}] {} = {:#?}",
+            file!(),
+            line!(),
+            stringify!($val),
+            &$val
+        );
+        $val
+    }};
+}
+
 fn main() {
     let out = std::io::stdout();
 
@@ -39,7 +53,8 @@ fn main() {
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    let world = BVHNode::new(&mut air_bubble()) as Arc<dyn Hittable>;
+    let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
+    // let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
     // dbg!(world);
     let pixels = camera.render(&world);
 

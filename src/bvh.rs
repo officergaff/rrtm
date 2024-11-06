@@ -32,6 +32,7 @@ impl BVHNode {
             _ => HittableAxisCompare::box_compare_z,
         };
         let object_span = end - start;
+        objects[start..end].sort_by(|a, b| comparator(a, b));
         match object_span {
             1 => {
                 left = objects[start].clone();
@@ -42,7 +43,6 @@ impl BVHNode {
                 right = objects[start + 1].clone();
             }
             _ => {
-                objects[start..end].sort_by(|a, b| comparator(a, b));
                 let mid = start + object_span / 2;
                 left = Self::construct(objects, start, mid);
                 right = Self::construct(objects, mid, end);
@@ -54,16 +54,13 @@ impl BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&self, r: &Ray, ray_t: &mut Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         if !self.bbox.hit(r, ray_t) {
             return false;
         }
-
         let hit_left = self.left.hit(r, ray_t, rec);
-
-        let mut right_interval = Interval::new(ray_t.min, if hit_left { rec.t } else { ray_t.max });
-        let hit_right = self.right.hit(r, &mut right_interval, rec);
-
+        let right_interval = Interval::new(ray_t.min, if hit_left { rec.t } else { ray_t.max });
+        let hit_right = self.right.hit(r, right_interval, rec);
         hit_left || hit_right
     }
     fn bounding_box(&self) -> AABB {

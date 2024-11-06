@@ -146,7 +146,7 @@ impl Camera {
 
         // Fix for shadow acne, due to floating point rounding errors, the reflected ray might end
         // up being under surface of the object, we limit the minimum intersect distance
-        if world.hit(&ray, &mut Interval::new(0.001, f64::INFINITY), &mut rec) {
+        if world.hit(&ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
             // let direction = Vec3::random_on_hemisphere(*rec.normal); --- Uniform Reflection
             // let direction = rec.normal + Vec3::random_unit_vector(); // Lambertian Reflection
             let mut scattered = Ray::default();
