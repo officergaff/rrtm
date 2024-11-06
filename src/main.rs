@@ -7,6 +7,7 @@ mod interval;
 mod material;
 mod ray;
 mod sphere;
+mod texture;
 mod utils;
 mod vec3;
 
