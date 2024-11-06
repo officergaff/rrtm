@@ -55,7 +55,6 @@ fn main() {
     );
     let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
     // let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
-    // dbg!(world);
     let pixels = camera.render(&world);
 
     for p in pixels {

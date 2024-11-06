@@ -22,10 +22,12 @@ impl BVHNode {
     }
 
     pub fn construct(objects: &mut Vec<Arc<dyn Hittable>>, start: usize, end: usize) -> Arc<Self> {
-        let mut bbox = AABB::default();
-        for object_index in start..end {
-            bbox = AABB::with_boxes(&bbox, &objects[object_index].bounding_box());
+        // We create a bounding box with all the elements of the objects list
+        let mut bbox = AABB::empty();
+        for obj in objects[start..end].iter() {
+            bbox = AABB::with_boxes(&bbox, &obj.bounding_box());
         }
+        // Split the left-right nodes by the longest axis of the bounding box
         let axis = bbox.longest_axis();
         let comparator = match axis {
             0 => HittableAxisCompare::box_compare_x,
@@ -33,26 +35,29 @@ impl BVHNode {
             _ => HittableAxisCompare::box_compare_z,
         };
 
+        // Sort by bounding boxes' axis intervals
         let object_span = end - start;
         objects[start..end].sort_by(|a, b| comparator(a, b));
         let left: Arc<dyn Hittable>;
         let right: Arc<dyn Hittable>;
         match object_span {
             1 => {
+                // Only one object in list, give it to left and right to avoid null nodes
                 left = objects[start].clone();
                 right = objects[start].clone();
             }
             2 => {
+                // Two objects in the list, split left and right
                 left = objects[start].clone();
                 right = objects[start + 1].clone();
             }
             _ => {
+                // Split objects by midpoint to create a balanced tree
                 let mid = start + object_span / 2;
                 left = Self::construct(objects, start, mid);
                 right = Self::construct(objects, mid, end);
             }
         }
-        let bbox = AABB::with_boxes(&left.bounding_box(), &right.bounding_box());
         Arc::new(Self { left, right, bbox })
     }
 }
