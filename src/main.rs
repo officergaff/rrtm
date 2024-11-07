@@ -27,40 +27,41 @@ use crate::{
     vec3::Vec3,
 };
 
-#[allow(unused_macros)]
-macro_rules! dbg {
-    ($val:expr) => {{
-        println!(
-            "[{}:{}] {} = {:#?}",
-            file!(),
-            line!(),
-            stringify!($val),
-            &$val
-        );
-        $val
-    }};
-}
-
 fn main() {
+    use std::time::Instant;
+    let now = Instant::now();
     let out = std::io::stdout();
 
     let lookfrom = Point3::new(13., 2., 3.);
     let lookat = Point3::new(0., 0., 0.);
     let vup = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
+    let camera = Camera::new(
+        1000,
+        16. / 9.,
+        100,
+        50,
+        20.,
+        lookfrom,
+        lookat,
+        vup,
+        0.6,
+        10.,
+    );
 
     let _ = writeln!(
         &out,
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
-    // let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
+    // let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
+    let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
     let pixels = camera.render(&world);
 
     for p in pixels {
         let _ = writeln!(&out, "{}", p);
     }
+    let elapsed = now.elapsed();
+    dbg!(elapsed);
 }
 
 fn render_much_sphere() -> HittableList {
