@@ -15,6 +15,7 @@ use std::{f64::consts, fs::File, io::Write, sync::Arc};
 
 use bvh::BVHNode;
 use hittable::Hittable;
+use texture::CheckerTexture;
 
 use crate::{
     camera::Camera,
@@ -35,26 +36,15 @@ fn main() {
     let lookfrom = Point3::new(13., 2., 3.);
     let lookat = Point3::new(0., 0., 0.);
     let vup = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(
-        1000,
-        16. / 9.,
-        100,
-        50,
-        20.,
-        lookfrom,
-        lookat,
-        vup,
-        0.6,
-        10.,
-    );
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
 
     let _ = writeln!(
         &out,
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    // let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
-    let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
+    let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
+    // let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
     let pixels = camera.render(&world);
 
     for p in pixels {
@@ -67,7 +57,12 @@ fn main() {
 fn render_much_sphere() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(CheckerTexture::with_color(
+        0.32,
+        &Color::new(0.2, 0.3, 0.1),
+        &Color::new(0.9, 0.9, 0.9),
+    ));
+    let ground_mat = Arc::new(Lambertian::with_texture(checker));
     world.add(Arc::new(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,

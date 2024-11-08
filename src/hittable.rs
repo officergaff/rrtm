@@ -14,6 +14,8 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub material: Option<Arc<dyn Material>>,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
 }
 
@@ -30,7 +32,7 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Send + Sync + std::fmt::Debug {
+pub trait Hittable: Send + Sync + Debug {
     // Check if Hittable object has been hit. Hit will be implemented differently depending on the
     // struct, but it mostly mutate the HitRecord to store information.
     //

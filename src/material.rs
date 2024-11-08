@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use crate::{
     color::Color,
     hittable::HitRecord,
     ray::Ray,
+    texture::{SolidColor, Texture},
     utils::random_double,
     vec3::{dot, unit_vector, Vec3},
 };
@@ -18,12 +21,18 @@ pub trait Material: Send + Sync + std::fmt::Debug {
 
 #[derive(Debug)]
 pub struct Lambertian {
-    pub albedo: Color,
+    tex: Arc<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+        Self {
+            tex: Arc::new(SolidColor::new(albedo)),
+        }
+    }
+
+    pub fn with_texture(tex: Arc<dyn Texture>) -> Self {
+        Self { tex }
     }
 }
 
@@ -43,7 +52,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal
         }
         *scattered = Ray::new_tm(rec.p, scatter_direction, r_in.time());
-        *attenuation = self.albedo;
+        *attenuation = self.tex.value(rec.u, rec.v, &rec.p);
         return true;
     }
 }
