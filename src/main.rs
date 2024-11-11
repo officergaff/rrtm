@@ -46,7 +46,20 @@ fn main() {
     let elapsed = now.elapsed();
     dbg!(elapsed);
 }
+fn mike() -> (Camera, Arc<dyn Hittable>) {
+    let lookfrom = Point3::new(0., 0., 12.);
+    let lookat = Point3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0., 12.);
 
+    let mut world = HittableList::new();
+    let earth_texture = Arc::new(ImageTexture::new("cat.jpg"));
+    let earth_surface = Arc::new(Lambertian::with_texture(earth_texture));
+    let globe = Arc::new(Sphere::new(Point3::new(0., 0., 0.), 2., earth_surface));
+    world.add(globe);
+
+    (camera, BVHNode::new(&mut world) as Arc<dyn Hittable>)
+}
 fn earth() -> (Camera, Arc<dyn Hittable>) {
     let lookfrom = Point3::new(0., 0., 12.);
     let lookat = Point3::new(0., 0., 0.);
