@@ -68,6 +68,9 @@ impl Hittable for BVHNode {
             return false;
         }
         let hit_left = self.left.hit(r, ray_t, rec);
+
+        // If we know that the ray has hit the left bbox, then we don't need to search through the
+        // entire Interval of the right bounding box.
         let right_interval = Interval::new(ray_t.min, if hit_left { rec.t } else { ray_t.max });
         let hit_right = self.right.hit(r, right_interval, rec);
         hit_left || hit_right
