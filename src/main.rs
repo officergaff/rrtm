@@ -33,20 +33,13 @@ fn main() {
     let now = Instant::now();
     let out = std::io::stdout();
 
-    let lookfrom = Point3::new(13., 2., 3.);
-    let lookat = Point3::new(0., 0., 0.);
-    let vup = Vec3::new(0., 1., 0.);
-    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
-
+    let (camera, world) = checkered_sphere();
+    let pixels = camera.render(&world);
     let _ = writeln!(
         &out,
         "P3\n{} {}\n255\n",
         camera.image_width, camera.image_height
     );
-    let world = BVHNode::new(&mut render_much_sphere()) as Arc<dyn Hittable>;
-    // let world = Arc::new(render_much_sphere()) as Arc<dyn Hittable>;
-    let pixels = camera.render(&world);
-
     for p in pixels {
         let _ = writeln!(&out, "{}", p);
     }
@@ -54,7 +47,37 @@ fn main() {
     dbg!(elapsed);
 }
 
-fn render_much_sphere() -> HittableList {
+fn checkered_sphere() -> (Camera, Arc<dyn Hittable>) {
+    let lookfrom = Point3::new(13., 2., 3.);
+    let lookat = Point3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
+    let mut world = HittableList::new();
+
+    let checker = Arc::new(CheckerTexture::with_color(
+        0.32,
+        &Color::new(0.2, 0.3, 0.1),
+        &Color::new(0.9, 0.9, 0.9),
+    ));
+
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0., -10., 0.),
+        10.,
+        Arc::new(Lambertian::with_texture(checker.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0., 10., 0.),
+        10.,
+        Arc::new(Lambertian::with_texture(checker)),
+    )));
+    (camera, BVHNode::new(&mut world) as Arc<dyn Hittable>)
+}
+
+fn render_much_sphere() -> (Camera, Arc<dyn Hittable>) {
+    let lookfrom = Point3::new(13., 2., 3.);
+    let lookat = Point3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0.6, 10.);
     let mut world = HittableList::new();
 
     let checker = Arc::new(CheckerTexture::with_color(
@@ -103,7 +126,7 @@ fn render_much_sphere() -> HittableList {
 
     let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Arc::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
-    return world;
+    return (camera, BVHNode::new(&mut world) as Arc<dyn Hittable>);
 }
 
 fn wide_angle_test() -> HittableList {

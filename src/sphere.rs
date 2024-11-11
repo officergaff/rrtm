@@ -6,7 +6,7 @@ use crate::{
     ray::{Point3, Ray},
     vec3::{dot, Vec3},
 };
-use std::sync::Arc;
+use std::{f64::consts::PI, sync::Arc};
 
 #[derive(Debug)]
 pub struct Sphere {
@@ -43,6 +43,20 @@ impl Sphere {
             bbox: AABB::with_boxes(&box1, &box2),
         };
     }
+
+    /// p: given a point on the sphere of radius one, centered at the origin
+    /// u: returned value [0,1] of angle around the Y-axis from X=1
+    /// v: returned value [0,1] of angle from Y=-1 to Y=+10
+    /// <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+    /// <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+    /// <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+    fn get_sphere(p: &Point3, u: &mut f64, v: &mut f64) {
+        let theta = f64::acos(-p.y());
+        let phi = f64::atan2(-p.z(), p.x()) + PI;
+
+        *u = phi / (2. * PI);
+        *v = theta / PI;
+    }
 }
 
 impl Hittable for Sphere {
@@ -76,6 +90,7 @@ impl Hittable for Sphere {
         rec.material = self.material.clone();
         let outward_normal = (rec.p - current_center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
+        Self::get_sphere(&outward_normal, &mut rec.u, &mut rec.v);
         return true;
     }
 
