@@ -5,6 +5,7 @@ mod color;
 mod hittable;
 mod interval;
 mod material;
+mod perlin;
 mod ray;
 mod sphere;
 mod texture;
