@@ -16,7 +16,7 @@ use std::{f64::consts, fs::File, io::Write, sync::Arc};
 
 use bvh::BVHNode;
 use hittable::Hittable;
-use texture::{CheckerTexture, ImageTexture};
+use texture::{CheckerTexture, ImageTexture, NoiseTexture};
 
 use crate::{
     camera::Camera,
@@ -34,7 +34,7 @@ fn main() {
     let now = Instant::now();
     let out = std::io::stdout();
 
-    let (camera, world) = earth();
+    let (camera, world) = perlin();
     let pixels = camera.render(&world);
     let _ = writeln!(
         &out,
@@ -46,6 +46,29 @@ fn main() {
     }
     let elapsed = now.elapsed();
     dbg!(elapsed);
+}
+
+fn perlin() -> (Camera, Arc<dyn Hittable>) {
+    let lookfrom = Point3::new(13., 2., 3.);
+    let lookat = Point3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0., 12.);
+
+    let mut world = HittableList::new();
+    let pertext = Arc::new(NoiseTexture::new());
+    let ground = Arc::new(Sphere::new(
+        Point3::new(0., -1000., 0.),
+        1000.,
+        Arc::new(Lambertian::with_texture(pertext.clone())),
+    ));
+    let sphere = Arc::new(Sphere::new(
+        Point3::new(0., 2., 0.),
+        2.,
+        Arc::new(Lambertian::with_texture(pertext.clone())),
+    ));
+    world.add(ground);
+    world.add(sphere);
+    (camera, BVHNode::new(&mut world) as Arc<dyn Hittable>)
 }
 fn mike() -> (Camera, Arc<dyn Hittable>) {
     let lookfrom = Point3::new(0., 0., 12.);

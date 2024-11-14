@@ -164,7 +164,7 @@ impl Texture for ImageTexture {
 }
 
 #[derive(Debug)]
-struct NoiseTexture {
+pub struct NoiseTexture {
     noise: Perlin,
 }
 
