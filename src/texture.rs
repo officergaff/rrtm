@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{color::Color, ray::Point3};
+use crate::{color::Color, perlin::Perlin, ray::Point3};
 
 pub trait Texture: Send + Sync + Debug {
     fn value(&self, u: f64, v: f64, p: &Point3) -> Color;
@@ -160,5 +160,24 @@ impl Texture for ImageTexture {
             pixel[1] as f64 * COLOR_SCALE,
             pixel[2] as f64 * COLOR_SCALE,
         )
+    }
+}
+
+#[derive(Debug)]
+struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        Self {
+            noise: Perlin::new(),
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, u: f64, v: f64, p: &Point3) -> Color {
+        return Color::new(1., 1., 1.) * self.noise.noise(p);
     }
 }
