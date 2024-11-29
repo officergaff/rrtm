@@ -1,30 +1,15 @@
-mod aabb;
-mod bvh;
-mod camera;
-mod color;
-mod hittable;
-mod interval;
-mod material;
-mod perlin;
-mod ray;
-mod sphere;
-mod texture;
-mod utils;
-mod vec3;
-
 use std::{f64::consts, fs::File, io::Write, sync::Arc};
 
-use bvh::BVHNode;
-use hittable::Hittable;
-use texture::{CheckerTexture, ImageTexture, NoiseTexture};
-
-use crate::{
+use rrtm::{
+    bvh::BVHNode,
     camera::Camera,
     color::Color,
+    hittable::Hittable,
     hittable::HittableList,
     material::*,
     ray::Point3,
     sphere::Sphere,
+    texture::{CheckerTexture, ImageTexture, NoiseTexture},
     utils::{random_double, random_double_range},
     vec3::Vec3,
 };

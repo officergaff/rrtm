@@ -2,7 +2,7 @@ use crate::{interval::Interval, vec3::Vec3};
 pub type Color = Vec3;
 
 impl Color {
-    pub fn get_rgb(&self) -> [i32; 3] {
+    pub fn get_rgb(&self) -> [u8; 3] {
         let r = self.x();
         let g = self.y();
         let b = self.z();
@@ -12,9 +12,9 @@ impl Color {
         let bg = linear_to_gamma(b);
 
         let intensity = Interval::new(0.000, 0.999);
-        let rbyte = (256. * intensity.clamp(rg)) as i32;
-        let gbyte = (256. * intensity.clamp(gg)) as i32;
-        let bbyte = (256. * intensity.clamp(bg)) as i32;
+        let rbyte = (256. * intensity.clamp(rg)) as u8;
+        let gbyte = (256. * intensity.clamp(gg)) as u8;
+        let bbyte = (256. * intensity.clamp(bg)) as u8;
         return [rbyte, gbyte, bbyte];
     }
 }

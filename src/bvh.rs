@@ -1,11 +1,10 @@
-use std::{env::consts, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     aabb::AABB,
     hittable::{HitRecord, Hittable, HittableAxisCompare, HittableList},
     interval::Interval,
     ray::Ray,
-    utils::random_int,
 };
 
 #[derive(Debug)]
