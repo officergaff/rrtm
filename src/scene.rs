@@ -20,11 +20,22 @@ pub struct Scene {
 
 #[wasm_bindgen]
 impl Scene {
-    pub fn new() -> Self {
+    pub fn new(width: i32, aspect_ratio: f64, samples_per_pixel: i32) -> Self {
         let lookfrom = Point3::new(13., 2., 3.);
         let lookat = Point3::new(0., 0., 0.);
         let vup = Vec3::new(0., 1., 0.);
-        let camera = Camera::new(400, 16. / 9., 100, 50, 20., lookfrom, lookat, vup, 0., 12.);
+        let camera = Camera::new(
+            width,
+            aspect_ratio,
+            samples_per_pixel,
+            50,
+            20.,
+            lookfrom,
+            lookat,
+            vup,
+            0.,
+            12.,
+        );
 
         let mut world = HittableList::new();
         let pertext = Arc::new(NoiseTexture::new());
