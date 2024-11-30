@@ -33,7 +33,7 @@ fn main() {
     dbg!(elapsed);
 }
 
-fn perlin() -> (Camera, Arc<dyn Hittable>) {
+pub fn perlin() -> (Camera, Arc<dyn Hittable>) {
     let lookfrom = Point3::new(13., 2., 3.);
     let lookat = Point3::new(0., 0., 0.);
     let vup = Vec3::new(0., 1., 0.);

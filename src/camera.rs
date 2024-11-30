@@ -7,7 +7,10 @@ use crate::{
     utils::{degrees_to_radians, random_double},
     vec3::{cross, unit_vector, Vec3},
 };
+
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
+
 use std::sync::Arc;
 
 pub struct Camera {
@@ -115,6 +118,7 @@ impl Camera {
         }
     }
 
+    #[cfg(feature = "parallel")]
     pub fn render(&self, world: &Arc<dyn Hittable>) -> Vec<String> {
         return (0..self.image_height)
             .into_par_iter()
@@ -136,6 +140,26 @@ impl Camera {
                 row
             })
             .collect();
+    }
+    #[cfg(not(feature = "parallel"))]
+    pub fn render(&self, world: &Arc<dyn Hittable>) -> Vec<String> {
+        (0..self.image_height)
+            .flat_map(|j| {
+                let row: Vec<String> = (0..self.image_width)
+                    .map(|i| {
+                        let pixel_color: Color = (0..self.samples_per_pixel)
+                            .map(|_| {
+                                let r = self.get_ray(i, j);
+                                self.ray_color(r, world, self.max_depth)
+                            })
+                            .fold(Color::default(), |acc, color| acc + color);
+                        let rgb = (pixel_color * self.pixel_samples_scale).get_rgb();
+                        format!("{} {} {}", rgb[0], rgb[1], rgb[2])
+                    })
+                    .collect();
+                row
+            })
+            .collect()
     }
 
     pub fn ray_color(&self, ray: Ray, world: &Arc<dyn Hittable>, depth: i32) -> Color {
