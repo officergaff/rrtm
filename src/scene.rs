@@ -19,6 +19,11 @@ pub struct Scene {
 }
 
 #[wasm_bindgen]
+pub fn hello() -> String {
+    format!("hello")
+}
+
+#[wasm_bindgen]
 impl Scene {
     pub fn new(width: i32, aspect_ratio: f64, samples_per_pixel: i32) -> Self {
         let lookfrom = Point3::new(13., 2., 3.);
