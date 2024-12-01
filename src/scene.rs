@@ -10,17 +10,30 @@ use crate::{
     texture::NoiseTexture,
     vec3::Vec3,
 };
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
+#[derive(Serialize)]
 #[wasm_bindgen]
 pub struct Scene {
     camera: Camera,
+    #[serde(skip)]
     world: Arc<dyn Hittable>,
 }
 
+#[derive(Serialize)]
+pub struct Data {
+    name: String,
+    value: i32,
+}
+
 #[wasm_bindgen]
-pub fn hello() -> String {
-    format!("hello")
+pub fn hello() -> JsValue {
+    let lookfrom = Point3::new(13., 2., 3.);
+    let lookat = Point3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let camera = Camera::new(44444, 1., 100, 50, 20., lookfrom, lookat, vup, 0., 12.);
+    serde_wasm_bindgen::to_value(&camera).unwrap()
 }
 
 #[wasm_bindgen]
