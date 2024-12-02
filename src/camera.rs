@@ -120,11 +120,11 @@ impl Camera {
         }
     }
 
-    pub fn render(&self, world: &Arc<dyn Hittable>) -> Vec<String> {
+    pub fn render(&self, world: &Arc<dyn Hittable>) -> Vec<Color> {
         return (0..self.image_height)
             .into_par_iter()
             .flat_map(|j| {
-                let row: Vec<String> = (0..self.image_width)
+                let row: Vec<Color> = (0..self.image_width)
                     .into_par_iter()
                     .map(|i| {
                         let pixel_color: Color = (0..self.samples_per_pixel)
@@ -134,8 +134,7 @@ impl Camera {
                                 self.ray_color(r, world, self.max_depth)
                             })
                             .reduce(|| Color::default(), |acc, color| acc + color);
-                        let rgb = (pixel_color * self.pixel_samples_scale).get_rgb();
-                        format!("{} {} {}", rgb[0], rgb[1], rgb[2])
+                        pixel_color * self.pixel_samples_scale
                     })
                     .collect();
                 row
@@ -193,6 +192,13 @@ impl Camera {
         // Returns a random point in the camera defocus disk
         let p = Vec3::random_in_unit_disk();
         self.lookfrom + (self.defocus_disk_u * p[0]) + (self.defocus_disk_v * p[1])
+    }
+
+    pub fn image_width(&self) -> usize {
+        self.image_width as usize
+    }
+    pub fn image_height(&self) -> usize {
+        self.image_height as usize
     }
 }
 

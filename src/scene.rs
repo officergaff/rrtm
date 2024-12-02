@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::{
     bvh::BVHNode,
     camera::Camera,
+    color::Color,
     hittable::{Hittable, HittableList},
     material::Lambertian,
     ray::Point3,
@@ -10,6 +11,7 @@ use crate::{
     texture::NoiseTexture,
     vec3::Vec3,
 };
+use js_sys::{Uint8ClampedArray, WebAssembly};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
@@ -17,14 +19,10 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct Scene {
     camera: Camera,
+    buffer: Vec<Color>,
+    image: Vec<u8>,
     #[serde(skip)]
     world: Arc<dyn Hittable>,
-}
-
-#[derive(Serialize)]
-pub struct Data {
-    name: String,
-    value: i32,
 }
 
 #[wasm_bindgen]
@@ -38,14 +36,14 @@ pub fn hello() -> JsValue {
 
 #[wasm_bindgen]
 impl Scene {
-    pub fn new(width: i32, aspect_ratio: f64, samples_per_pixel: i32) -> Self {
+    pub fn new(width: i32, aspect_ratio: f64) -> Self {
         let lookfrom = Point3::new(13., 2., 3.);
         let lookat = Point3::new(0., 0., 0.);
         let vup = Vec3::new(0., 1., 0.);
         let camera = Camera::new(
             width,
             aspect_ratio,
-            samples_per_pixel,
+            1,
             50,
             20.,
             lookfrom,
@@ -70,12 +68,24 @@ impl Scene {
         world.add(ground);
         world.add(sphere);
         Self {
+            image: vec![255; camera.image_width() * camera.image_height()],
             camera,
+            buffer: Vec::new(),
             world: BVHNode::new(&mut world) as Arc<dyn Hittable>,
         }
     }
 
-    pub fn get_image(&self) -> Vec<String> {
-        self.camera.render(&self.world)
+    pub fn get_image(&self) -> Uint8ClampedArray {
+        let img_ptr = self.image.as_ptr();
+        let mem = wasm_bindgen::memory().unchecked_into::<WebAssembly::Memory>();
+        Uint8ClampedArray::new(&mem.buffer())
+            .slice(img_ptr as u32, (img_ptr as usize + self.image.len()) as u32)
+    }
+
+    pub fn image_width(&self) -> usize {
+        self.camera.image_width()
+    }
+    pub fn image_height(&self) -> usize {
+        self.camera.image_height()
     }
 }

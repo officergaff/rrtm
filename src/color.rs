@@ -17,6 +17,11 @@ impl Color {
         let bbyte = (256. * intensity.clamp(bg)) as u8;
         return [rbyte, gbyte, bbyte];
     }
+
+    pub fn get_string(&self) -> String {
+        let rgb = self.get_rgb();
+        format!("{} {} {}", rgb[0], rgb[1], rgb[2])
+    }
 }
 
 // Linear correction for more consistent ramp from darkness to lightness

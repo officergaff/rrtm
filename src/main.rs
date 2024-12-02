@@ -27,7 +27,7 @@ fn main() {
         camera.image_width, camera.image_height
     );
     for p in pixels {
-        let _ = writeln!(&out, "{}", p);
+        let _ = writeln!(&out, "{}", p.get_string());
     }
     let elapsed = now.elapsed();
     dbg!(elapsed);
