@@ -74,4 +74,8 @@ impl Scene {
             world: BVHNode::new(&mut world) as Arc<dyn Hittable>,
         }
     }
+
+    pub fn get_image(&self) -> Vec<String> {
+        self.camera.render(&self.world)
+    }
 }
