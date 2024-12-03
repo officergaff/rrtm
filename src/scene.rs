@@ -43,7 +43,7 @@ impl Scene {
         let camera = Camera::new(
             width,
             aspect_ratio,
-            1,
+            10,
             50,
             20.,
             lookfrom,
@@ -80,6 +80,14 @@ impl Scene {
         let mem = wasm_bindgen::memory().unchecked_into::<WebAssembly::Memory>();
         Uint8ClampedArray::new(&mem.buffer())
             .slice(img_ptr as u32, (img_ptr as usize + self.image.len()) as u32)
+    }
+
+    pub fn render(&self) -> Vec<String> {
+        self.camera
+            .render(&self.world)
+            .iter()
+            .map(|v| v.to_string())
+            .collect()
     }
 
     pub fn image_width(&self) -> usize {
