@@ -18,16 +18,20 @@ const ctx = canvas.getContext("2d");
 await init();
 await initialize(1, true);
 
-console.log(hello());
-const width = 4 * 100;
-const scene = Scene.new(width, 16.0 / 9.0);
+const width = 2 * 1000;
+const scene = Scene.new(width, 16.0 / 9.0, 1, 2);
+
+console.log(scene.to_obj());
 console.log("starting render");
-console.log(scene.render());
+scene.render();
 console.log("render ended");
+
 canvas.width = scene.image_width();
 canvas.height = scene.image_height();
+console.log("canvas width: " + scene.image_width());
+console.log("canvas height: " + scene.image_height());
 
 const raw = scene.get_image();
-const imageData = new ImageData(raw, width, scene.image_height());
+const imageData = new ImageData(raw, width);
 ctx?.putImageData(imageData, 0, 0);
 console.log(imageData);

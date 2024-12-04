@@ -8,7 +8,7 @@ use crate::{
     material::Lambertian,
     ray::Point3,
     sphere::Sphere,
-    texture::NoiseTexture,
+    texture::{ImageTexture, NoiseTexture},
     vec3::Vec3,
 };
 use js_sys::{Uint8ClampedArray, WebAssembly};
@@ -36,15 +36,15 @@ pub fn hello() -> JsValue {
 
 #[wasm_bindgen]
 impl Scene {
-    pub fn new(width: i32, aspect_ratio: f64) -> Self {
-        let lookfrom = Point3::new(13., 2., 3.);
+    pub fn new(width: i32, aspect_ratio: f64, samples_per_pixel: i32, max_depth: i32) -> Self {
+        let lookfrom = Point3::new(0., 0., 12.);
         let lookat = Point3::new(0., 0., 0.);
         let vup = Vec3::new(0., 1., 0.);
         let camera = Camera::new(
             width,
             aspect_ratio,
-            10,
-            50,
+            samples_per_pixel,
+            max_depth,
             20.,
             lookfrom,
             lookat,
@@ -54,25 +54,22 @@ impl Scene {
         );
 
         let mut world = HittableList::new();
-        let pertext = Arc::new(NoiseTexture::new());
-        let ground = Arc::new(Sphere::new(
-            Point3::new(0., -1000., 0.),
-            1000.,
-            Arc::new(Lambertian::with_texture(pertext.clone())),
-        ));
-        let sphere = Arc::new(Sphere::new(
-            Point3::new(0., 2., 0.),
-            2.,
-            Arc::new(Lambertian::with_texture(pertext.clone())),
-        ));
-        world.add(ground);
-        world.add(sphere);
+
+        let earth_texture = Arc::new(ImageTexture::new("mike.jpg"));
+        let earth_surface = Arc::new(Lambertian::with_texture(earth_texture));
+        let globe = Arc::new(Sphere::new(Point3::new(0., 0., 0.), 2., earth_surface));
+        world.add(globe);
+
         Self {
-            image: vec![255; camera.image_width() * camera.image_height()],
+            image: vec![255; 4 * camera.image_width() * camera.image_height()],
             camera,
             buffer: Vec::new(),
             world: BVHNode::new(&mut world) as Arc<dyn Hittable>,
         }
+    }
+
+    pub fn to_obj(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
     }
 
     pub fn get_image(&self) -> Uint8ClampedArray {
@@ -82,12 +79,18 @@ impl Scene {
             .slice(img_ptr as u32, (img_ptr as usize + self.image.len()) as u32)
     }
 
-    pub fn render(&self) -> Vec<String> {
-        self.camera
+    pub fn render(&mut self) {
+        let frame: Vec<[u8; 3]> = self
+            .camera
             .render(&self.world)
             .iter()
-            .map(|v| v.to_string())
-            .collect()
+            .map(|v| v.get_rgb())
+            .collect();
+        for (i, rgb) in frame.iter().enumerate() {
+            self.image[i * 4 + 0] = rgb[0];
+            self.image[i * 4 + 1] = rgb[1];
+            self.image[i * 4 + 2] = rgb[2];
+        }
     }
 
     pub fn image_width(&self) -> usize {
