@@ -90,7 +90,7 @@ impl Scene {
                         mat = Arc::new(Dielectric::new(1.5));
                     }
                     let center2 = center + Vec3::new(0., random_double_range(0., 0.5), 0.);
-                    world.add(Arc::new(Sphere::new_moving(center, center2, 0.2, mat)));
+                    world.add(Arc::new(Sphere::new(center, 0.2, mat)));
                 }
             }
         }
@@ -118,6 +118,10 @@ impl Scene {
     // Helps with debugging values
     pub fn to_obj(&self) -> JsValue {
         serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    pub fn get_camera_obj(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.camera).unwrap()
     }
 
     // Get the current image
