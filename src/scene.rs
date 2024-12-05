@@ -20,8 +20,10 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct Scene {
     camera: Camera,
-    buffer: Vec<Color>,
-    image: Vec<u8>,
+    buffer: Vec<Color>, // Aggregate of ray samples per pixel
+    image: Vec<u8>,     // Resulting image
+    current_sample_count: u32,
+    samples_per_pixel: u32,
     #[serde(skip)]
     world: Arc<dyn Hittable>,
 }
@@ -44,7 +46,7 @@ impl Scene {
         let camera = Camera::new(
             width,
             aspect_ratio,
-            samples_per_pixel,
+            1, // Modification to do progressive rendering
             max_depth,
             20.,
             lookfrom,
@@ -105,16 +107,20 @@ impl Scene {
 
         Self {
             image: vec![255; 4 * camera.image_width() * camera.image_height()],
+            buffer: vec![Color::default(); camera.image_width() * camera.image_height()],
             camera,
-            buffer: Vec::new(),
+            current_sample_count: 0,
+            samples_per_pixel: samples_per_pixel as u32,
             world: bvh,
         }
     }
 
+    // Helps with debugging values
     pub fn to_obj(&self) -> JsValue {
         serde_wasm_bindgen::to_value(&self).unwrap()
     }
 
+    // Get the current image
     pub fn get_image(&self) -> Uint8ClampedArray {
         let img_ptr = self.image.as_ptr();
         let mem = wasm_bindgen::memory().unchecked_into::<WebAssembly::Memory>();
@@ -122,14 +128,13 @@ impl Scene {
             .slice(img_ptr as u32, (img_ptr as usize + self.image.len()) as u32)
     }
 
+    // Basically captures one new ray sample per pixel
     pub fn render(&mut self) {
-        let frame: Vec<[u8; 3]> = self
-            .camera
-            .render(&self.world)
-            .iter()
-            .map(|v| v.get_rgb())
-            .collect();
-        for (i, rgb) in frame.iter().enumerate() {
+        self.current_sample_count += 1;
+        let frame_sample = self.camera.render(&self.world);
+        for (i, s) in frame_sample.into_iter().enumerate() {
+            self.buffer[i] += s;
+            let rgb = (self.buffer[i] / self.current_sample_count as f64).get_rgb();
             self.image[i * 4 + 0] = rgb[0];
             self.image[i * 4 + 1] = rgb[1];
             self.image[i * 4 + 2] = rgb[2];
@@ -141,5 +146,11 @@ impl Scene {
     }
     pub fn image_height(&self) -> usize {
         self.camera.image_height()
+    }
+    pub fn current_samples(&self) -> u32 {
+        self.current_sample_count
+    }
+    pub fn clear(&mut self) {
+        self.buffer.fill(Color::default());
     }
 }
