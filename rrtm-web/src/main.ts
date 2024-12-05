@@ -16,10 +16,10 @@ const ctx = canvas.getContext("2d");
 
 // init wasm
 await init();
-await initialize(1, true);
+await initialize(16, true);
 
-const width = 2 * 1000;
-const scene = Scene.new(width, 16.0 / 9.0, 1, 2);
+const width = 10 * 100;
+const scene = Scene.new(width, 16.0 / 9.0, 5, 12);
 
 console.log(scene.to_obj());
 console.log("starting render");

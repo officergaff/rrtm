@@ -5,10 +5,11 @@ use crate::{
     camera::Camera,
     color::Color,
     hittable::{Hittable, HittableList},
-    material::Lambertian,
+    material::{Dielectric, Lambertian, Material, Metal},
     ray::Point3,
     sphere::Sphere,
-    texture::{ImageTexture, NoiseTexture},
+    texture::{CheckerTexture, ImageTexture, NoiseTexture},
+    utils::{random_double, random_double_range},
     vec3::Vec3,
 };
 use js_sys::{Uint8ClampedArray, WebAssembly};
@@ -52,19 +53,61 @@ impl Scene {
             0.,
             12.,
         );
-
         let mut world = HittableList::new();
 
-        let earth_texture = Arc::new(ImageTexture::new("mike.jpg"));
-        let earth_surface = Arc::new(Lambertian::with_texture(earth_texture));
-        let globe = Arc::new(Sphere::new(Point3::new(0., 0., 0.), 2., earth_surface));
-        world.add(globe);
+        let checker = Arc::new(CheckerTexture::with_color(
+            0.32,
+            &Color::new(0.2, 0.3, 0.1),
+            &Color::new(0.9, 0.9, 0.9),
+        ));
+        let ground_mat = Arc::new(Lambertian::with_texture(checker));
+        world.add(Arc::new(Sphere::new(
+            Point3::new(0., -1000., 0.),
+            1000.,
+            ground_mat,
+        )));
+
+        for a in -11..11 {
+            for b in -11..11 {
+                let choose_mat = random_double();
+                let center = Point3::new(
+                    a as f64 + 0.9 * random_double(),
+                    0.2,
+                    b as f64 + 0.9 * random_double(),
+                );
+                if (center - Point3::new(4., 0.2, 0.)).length() > 0.9 {
+                    let mat: Arc<dyn Material>;
+                    if choose_mat < 0.8 {
+                        let albedo = Color::random() * Color::random();
+                        mat = Arc::new(Lambertian::new(albedo));
+                    } else if choose_mat < 0.95 {
+                        let albedo = Color::random_range(0.5, 1.);
+                        let fuzz = random_double_range(0., 0.5);
+                        mat = Arc::new(Metal::new(albedo, fuzz));
+                    } else {
+                        mat = Arc::new(Dielectric::new(1.5));
+                    }
+                    let center2 = center + Vec3::new(0., random_double_range(0., 0.5), 0.);
+                    world.add(Arc::new(Sphere::new_moving(center, center2, 0.2, mat)));
+                }
+            }
+        }
+
+        let mat1 = Arc::new(Dielectric::new(1.5));
+        world.add(Arc::new(Sphere::new(Point3::new(4., 1., 0.), 1., mat1)));
+
+        let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+        world.add(Arc::new(Sphere::new(Point3::new(0., 1., 0.), 1., mat2)));
+
+        let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+        world.add(Arc::new(Sphere::new(Point3::new(-4., 1., 0.), 1., mat3)));
+        let bvh = BVHNode::new(&mut world) as Arc<dyn Hittable>;
 
         Self {
             image: vec![255; 4 * camera.image_width() * camera.image_height()],
             camera,
             buffer: Vec::new(),
-            world: BVHNode::new(&mut world) as Arc<dyn Hittable>,
+            world: bvh,
         }
     }
 
