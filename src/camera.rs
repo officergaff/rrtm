@@ -20,20 +20,20 @@ pub struct Camera {
     pub image_height: i32,
     pub samples_per_pixel: i32, // random sampling per pixel for antialiasing
     pixel_samples_scale: f64,
-    pub max_depth: i32, // ray bounce depth
-    pub vfov: f64,      // vertical view angle -> field of view
-    lookfrom: Point3,   // point where camera is looking from
-    lookat: Point3,     // point where camera is looking at
-    vup: Vec3,          // rotation angle of camera
+    pub max_depth: i32,   // ray bounce depth
+    pub vfov: f64,        // vertical view angle -> field of view
+    pub lookfrom: Point3, // point where camera is looking from
+    pub lookat: Point3,   // point where camera is looking at
+    pub vup: Vec3,        // rotation angle of camera
 
     u: Vec3, // camera frame basis vectors
     v: Vec3,
     w: Vec3,
 
-    defocus_angle: f64,   // variation angle of rays through each pixel
-    focus_dist: f64,      // perfect focus distance
-    defocus_disk_u: Vec3, // defocus disk horizontal radius
-    defocus_disk_v: Vec3, // defocus disk vertical radius
+    pub defocus_angle: f64, // variation angle of rays through each pixel
+    pub focus_dist: f64,    // perfect focus distance
+    defocus_disk_u: Vec3,   // defocus disk horizontal radius
+    defocus_disk_v: Vec3,   // defocus disk vertical radius
     viewport_width: f64,
     viewport_height: f64,
     viewport_u: Vec3,

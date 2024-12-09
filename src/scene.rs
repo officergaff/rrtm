@@ -13,8 +13,22 @@ use crate::{
     vec3::Vec3,
 };
 use js_sys::{Uint8ClampedArray, WebAssembly};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
+
+#[derive(Deserialize)]
+struct CameraUpdate {
+    width: Option<i32>,
+    aspect_ratio: Option<f64>,
+    samples_per_pixel: Option<u32>,
+    max_depth: Option<i32>,
+    vfov: Option<f64>,
+    lookfrom: Option<[f64; 3]>,
+    lookat: Option<[f64; 3]>,
+    vup: Option<[f64; 3]>,
+    defocus_angle: Option<f64>,
+    focus_dist: Option<f64>,
+}
 
 #[derive(Serialize)]
 #[wasm_bindgen]
@@ -40,7 +54,7 @@ pub fn hello() -> JsValue {
 #[wasm_bindgen]
 impl Scene {
     pub fn new(width: i32, aspect_ratio: f64, samples_per_pixel: i32, max_depth: i32) -> Self {
-        let lookfrom = Point3::new(0., 0., 12.);
+        let lookfrom = Point3::new(13., 2., 3.);
         let lookat = Point3::new(0., 0., 0.);
         let vup = Vec3::new(0., 1., 0.);
         let camera = Camera::new(
@@ -155,6 +169,48 @@ impl Scene {
         self.current_sample_count
     }
     pub fn clear(&mut self) {
-        self.buffer.fill(Color::default());
+        self.buffer = vec![Color::default(); self.image_width() * self.image_height()];
+        self.image = vec![255; 4 * self.image_width() * self.image_height()];
+    }
+
+    pub fn update_camera(&mut self, js_camera: JsValue) -> Result<(), JsValue> {
+        let camera_update: CameraUpdate = serde_wasm_bindgen::from_value(js_camera)?;
+
+        let lookfrom = camera_update
+            .lookfrom
+            .map(|arr| Point3::new(arr[0], arr[1], arr[2]))
+            .unwrap_or_else(|| self.camera.lookfrom);
+
+        let lookat = camera_update
+            .lookat
+            .map(|arr| Point3::new(arr[0], arr[1], arr[2]))
+            .unwrap_or_else(|| self.camera.lookat);
+
+        let vup = camera_update
+            .vup
+            .map(|arr| Vec3::new(arr[0], arr[1], arr[2]))
+            .unwrap_or_else(|| self.camera.vup);
+
+        self.camera = Camera::new(
+            camera_update
+                .width
+                .unwrap_or(self.camera.image_width() as i32),
+            camera_update.aspect_ratio.unwrap_or(16. / 9.),
+            1, // Keep progressive rendering
+            camera_update.max_depth.unwrap_or(self.camera.max_depth),
+            camera_update.vfov.unwrap_or(self.camera.vfov),
+            lookfrom,
+            lookat,
+            vup,
+            camera_update
+                .defocus_angle
+                .unwrap_or(self.camera.defocus_angle),
+            camera_update.focus_dist.unwrap_or(self.camera.focus_dist),
+        );
+
+        self.clear();
+        self.current_sample_count = 0;
+
+        Ok(())
     }
 }
