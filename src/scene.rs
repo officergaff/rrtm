@@ -98,7 +98,8 @@ impl Scene {
                         mat = Arc::new(Lambertian::new(albedo));
                     } else if choose_mat < 0.95 {
                         let albedo = Color::random_range(0.5, 1.);
-                        let fuzz = random_double_range(0., 0.5);
+                        let fuzz = 0.;
+                        //let fuzz = random_double_range(0., 0.5);
                         mat = Arc::new(Metal::new(albedo, fuzz));
                     } else {
                         mat = Arc::new(Dielectric::new(1.5));

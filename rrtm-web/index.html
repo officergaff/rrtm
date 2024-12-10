@@ -6,7 +6,62 @@
     <title>rrtm</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="container">
+        <div class="render-section">
+          <h1>Wow</h1>
+          <p id="dimensions">dimensions</p>
+          <canvas id="canvas"></canvas>
+          <p id="fps">fps</p>
+          <p id="computes">computers</p>
+          <p id="threads">threads</p>
+        </div>
+        <div class="controls-section">
+          <h2>Camera Settings</h2>
+          <div class="sliders">
+            <p id="fov-value">fov</p>
+            <input type="range" min="0" max="179" class="slider" id="fov" />
+            <h3>Camera position</h3>
+            <p id="x-value">x</p>
+            <input
+              type="range"
+              min="-50"
+              max="50"
+              class="slider"
+              step="0.1"
+              id="x-slide"
+            />
+
+            <p id="y-value">y</p>
+            <input
+              type="range"
+              min="-50"
+              max="50"
+              class="slider"
+              step="0.1"
+              id="y-slide"
+            />
+
+            <p id="z-value">z</p>
+            <input
+              type="range"
+              min="-50"
+              max="50"
+              class="slider"
+              step="0.1"
+              id="z-slide"
+            />
+          </div>
+          <textarea
+            id="cameraSettings"
+            rows="20"
+            cols="50"
+            style="font-family: monospace"
+          ></textarea>
+          <button id="updateCamera">Update Camera</button>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
