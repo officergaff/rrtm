@@ -1,0 +1,13 @@
+.controls-section {
+  display: flex;
+  gap: 20px;
+}
+
+.sliders {
+  flex: 1;
+}
+
+#cameraSettings {
+  flex: 1;
+  height: auto;
+}

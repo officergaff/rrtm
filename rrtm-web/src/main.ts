@@ -83,7 +83,7 @@ function sleep(ms: number) {
 async function renderLoop(scene: Scene) {
   while (true) {
     if (scene.current_samples() < samplesPerPixel) {
-      dimensions.innerHTML = `${scene.image_width()}px * ${scene.image_height()}px`;
+      dimensions.innerHTML = `canvas dimensions: ${scene.image_width()}px * ${scene.image_height()}px`;
       const start = performance.now();
       scene.render();
       const elapsed = performance.now() - start;
