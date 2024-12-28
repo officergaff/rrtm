@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "copy:wasm": "rm -rf node_modules/rrtm && cp -r ../pkg ./node_modules/rrtm",
+    "dev": "npm run copy:wasm && vite",
+    "build": "npm run copy:wasm && tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
