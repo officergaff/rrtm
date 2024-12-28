@@ -133,7 +133,7 @@ async function run() {
     totalTime = 0.0;
   };
   xSlider.oninput = () => {
-    xSlider.innerHTML = `x: ${xSlider.value}`;
+    xDisplay.innerHTML = `x: ${xSlider.value}`;
     const numVal = Number(xSlider.value);
     lookfrom[0] = numVal;
     const settings = JSON.parse(settingsTextarea.value);
@@ -143,7 +143,7 @@ async function run() {
     totalTime = 0.0;
   };
   ySlider.oninput = () => {
-    ySlider.innerHTML = `y: ${ySlider.value}`;
+    yDisplay.innerHTML = `y: ${ySlider.value}`;
     const numVal = Number(ySlider.value);
     lookfrom[1] = numVal;
     const settings = JSON.parse(settingsTextarea.value);
@@ -153,7 +153,7 @@ async function run() {
     totalTime = 0.0;
   };
   zSlider.oninput = () => {
-    zSlider.innerHTML = `z: ${zSlider.value}`;
+    zDisplay.innerHTML = `z: ${zSlider.value}`;
     const numVal = Number(zSlider.value);
     lookfrom[2] = numVal;
     const settings = JSON.parse(settingsTextarea.value);
