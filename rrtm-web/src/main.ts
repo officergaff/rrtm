@@ -2,6 +2,17 @@ import "./style.css";
 
 import init, { initialize, Scene } from "rrtm/rrtm";
 
+function drawLoadingText(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement
+) {
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
+}
+
 async function run() {
   // Camera initialization
   const width = 7 * 100;
@@ -39,6 +50,9 @@ async function run() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   canvas.style.border = "1px solid red";
   const ctx = canvas.getContext("2d");
+  if (ctx) {
+    drawLoadingText(ctx, canvas);
+  }
   const fpsCounter = document.getElementById("fps") as HTMLElement;
   const threadsCounter = document.getElementById("threads") as HTMLElement;
   const computeCounter = document.getElementById("computes") as HTMLElement;
