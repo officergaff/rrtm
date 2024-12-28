@@ -1,6 +1,9 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  build: {
+    target: "esnext",
+  },
   server: {
     headers: {
       "Cross-Origin-Embedder-Policy": "require-corp",
